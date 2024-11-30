@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD Táblázat</title>
+	<link rel="stylesheet" href="assets/css/main.css" />
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h1>CRUD Táblázat</h1>
+	<h2>Új rekord hozzáadása</h2>
+    <form id="addForm">
+        <input type="text" name="nev" placeholder="Név" required />
+        <button style="margin-top:20pt;" type="submit">Hozzáadás</button>
+    </form>
+    <table id="crudTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Név</th>
+                <th>Műveletek</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Sorok dinamikusan generálva -->
+        </tbody>
+    </table>
+
+    <script>
+        const API_URL = '/crud';
+
+        async function fetchRecords() {
+            const response = await fetch(API_URL);
+            const records = await response.json();
+            const tableBody = document.querySelector('#crudTable tbody');
+            tableBody.innerHTML = '';
+            records.forEach(record => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${record.id}</td>
+                    <td><input type="text" value="${record.nev}" data-id="${record.id}" /></td>
+                    <td>
+                        <button onclick="updateRecord(${record.id})">Mentés</button>
+                        <button onclick="deleteRecord(${record.id})">Törlés</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        async function addRecord(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = new URLSearchParams(formData);
+            await fetch(API_URL, { method: 'POST', body: data });
+            event.target.reset();
+            fetchRecords();
+        }
+
+        async function updateRecord(id) {
+            const input = document.querySelector(`input[data-id="${id}"]`);
+            const data = new URLSearchParams({ nev: input.value });
+            await fetch(`${API_URL}/${id}`, { method: 'PUT', body: data });
+            fetchRecords();
+        }
+
+        async function deleteRecord(id) {
+            await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+            fetchRecords();
+        }
+
+        document.getElementById('addForm').addEventListener('submit', addRecord);
+        fetchRecords();
+    </script>
+</body>
+</html>
