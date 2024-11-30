@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>OOP Todo Alkalmazás</title>
+	<link rel="stylesheet" href="assets/css/main.css" />
+    <style>
+        body { max-width: 400px; margin: 50px auto; }
+        .completed { text-decoration: line-through; color: gray; }
+    </style>
+</head>
+<body>
+    <h1>Todo Alkalmazás</h1>
+    <input type="text" id="taskInput" placeholder="Add meg a feladatot">
+    <button style="margin-top:20pt;" onclick="todoApp.addTask()">Hozzáad</button>
+    <ul id="taskList"></ul>
+
+    <script>
+    class Task {
+        constructor(description) {
+            this.id = Date.now();
+            this.description = description;
+            this.completed = false;
+        }
+
+        toggle() {
+            this.completed = !this.completed;
+        }
+    }
+
+    class TodoList {
+        constructor() {
+            this.tasks = [];
+        }
+
+        addTask() {
+            const input = document.getElementById('taskInput');
+            const description = input.value.trim();
+            
+            // Üres input ellenőrzése
+            if (description === '') {
+                alert('Kérem adjon meg egy feladatot!');
+                return;
+            }
+
+            const task = new Task(description);
+            this.tasks.push(task);
+            this.render();
+            
+            // Input mező törlése
+            input.value = '';
+        }
+
+        removeTask(taskId) {
+            this.tasks = this.tasks.filter(task => task.id !== taskId);
+            this.render();
+        }
+
+        toggleTask(taskId) {
+            const task = this.tasks.find(task => task.id === taskId);
+            if (task) {
+                task.toggle();
+                this.render();
+            }
+        }
+
+        render() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+            this.tasks.forEach(task => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    ${task.description} 
+                    <button onclick="todoApp.toggleTask(${task.id})">✓</button>
+                    <button onclick="todoApp.removeTask(${task.id})">🗑️</button>
+                `;
+                li.classList.toggle('completed', task.completed);
+                taskList.appendChild(li);
+            });
+        }
+    }
+
+    const todoApp = new TodoList();
+    </script>
+</body>
+</html>
